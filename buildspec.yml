@@ -1,0 +1,33 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18 # Change runtime if your build process requires a specific environment
+    commands:
+      - echo "Installing dependencies (if any)..."
+      
+  pre_build:
+    commands:
+      - echo "Validating file structure..."
+      - ls -la
+      
+  build:
+    commands:
+      - echo "Building/Preparing files on $(date)..."
+      # If you use minifiers or build tools, insert commands here (e.g., npm run build)
+
+  post_build:
+    commands:
+      - echo "Deploying to AWS S3..."
+      # Syncs files to your S3 Bucket and deletes old files not present in local directory
+      - aws s3 sync . s3://$BUCKET_NAME --delete --exclude "buildspec.yml" --exclude ".git/*"
+      
+      # Optional: Clear AWS CloudFront cache to instantly show changes (uncomment if using CloudFront)
+      # - echo "Invalidating CloudFront distribution..."
+      # - aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+
+artifacts:
+  files:
+    - index.html
+    - style.css
